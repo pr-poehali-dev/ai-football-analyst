@@ -70,8 +70,8 @@ export async function apiChat(messages: { role: string; content: string }[]) {
 export async function apiOwnerList() {
   const r = await fetch(URLS.auth, {
     method: 'POST',
-    headers: authHeaders(),
-    body: JSON.stringify({ action: 'owner_list' }),
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'owner_list', token: getToken() }),
   });
   return r.json();
 }
@@ -79,8 +79,8 @@ export async function apiOwnerList() {
 export async function apiOwnerGrantVip(nickname: string, days: number) {
   const r = await fetch(URLS.auth, {
     method: 'POST',
-    headers: authHeaders(),
-    body: JSON.stringify({ action: 'owner_grant_vip', nickname, days }),
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'owner_grant_vip', nickname, days, token: getToken() }),
   });
   return r.json();
 }
@@ -88,8 +88,8 @@ export async function apiOwnerGrantVip(nickname: string, days: number) {
 export async function apiOwnerRevokeVip(nickname: string) {
   const r = await fetch(URLS.auth, {
     method: 'POST',
-    headers: authHeaders(),
-    body: JSON.stringify({ action: 'owner_revoke_vip', nickname }),
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'owner_revoke_vip', nickname, token: getToken() }),
   });
   return r.json();
 }

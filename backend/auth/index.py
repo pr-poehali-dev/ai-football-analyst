@@ -223,8 +223,8 @@ def handler(event: dict, context) -> dict:
 
         # --- OWNER ACTIONS (по токену creator) ---
         elif action in ('owner_list', 'owner_grant_vip', 'owner_revoke_vip'):
-            auth_header = event.get('headers', {}).get('x-authorization', '')
-            token = auth_header.replace('Bearer ', '')
+            auth_header = event.get('headers', {}).get('x-authorization', '') or event.get('headers', {}).get('authorization', '')
+            token = body.get('token', '') or auth_header.replace('Bearer ', '')
             cur.execute(
                 f"""SELECT u.nickname FROM {SCHEMA}.sessions s JOIN {SCHEMA}.users u ON u.id=s.user_id
                     WHERE s.token=%s AND s.expires_at > NOW()""", (token,)
