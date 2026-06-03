@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Icon from '@/components/ui/icon';
 
 const ADMIN_URL_KEY = 'angela_admin_key';
+const AUTH_URL = 'https://functions.poehali.dev/126ea50d-7c26-45ab-ba81-cf8c76bf2dc8';
 
 interface User {
   id: number;
@@ -31,11 +32,7 @@ export default function AdminPage() {
   const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null);
   const [days, setDays] = useState(30);
   const [search, setSearch] = useState('');
-  const [adminUrl, setAdminUrl] = useState('');
-
-  useEffect(() => {
-    fetch('/func2url.json').then(r => r.json()).then(d => setAdminUrl(d.auth || '')).catch(() => {});
-  }, []);
+  const adminUrl = AUTH_URL;
 
   const showMsg = (text: string, ok: boolean) => {
     setMsg({ text, ok });
