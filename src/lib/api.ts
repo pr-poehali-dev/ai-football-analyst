@@ -3,6 +3,7 @@ const URLS = {
   forecasts: 'https://functions.poehali.dev/ff5b1377-20b0-408d-8d59-e3c0e8513e8f',
   chat: 'https://functions.poehali.dev/e504a2ba-1b8e-4f0d-8883-393e7ffc06e1',
   photos: 'https://functions.poehali.dev/76ad174b-cf1b-402e-860d-7dee7e767fb1',
+  reviews: 'https://functions.poehali.dev/126ea50d-7c26-45ab-ba81-cf8c76bf2dc8',
 };
 
 function getToken() {
@@ -91,6 +92,27 @@ export async function apiOwnerRevokeVip(nickname: string) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ action: 'owner_revoke_vip', nickname, token: getToken() }),
   });
+  return r.json();
+}
+
+export async function apiReviewsList() {
+  const r = await fetch(URLS.reviews, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'reviews_list' }) });
+  return r.json();
+}
+export async function apiReviewsAdd(rating: number, text: string) {
+  const r = await fetch(URLS.reviews, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'reviews_add', rating, text, token: getToken() }) });
+  return r.json();
+}
+export async function apiReviewsOwnerList() {
+  const r = await fetch(URLS.reviews, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'reviews_owner_list', token: getToken() }) });
+  return r.json();
+}
+export async function apiReviewsHide(id: number) {
+  const r = await fetch(URLS.reviews, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'reviews_hide', id, token: getToken() }) });
+  return r.json();
+}
+export async function apiReviewsEdit(id: number, text: string, rating: number) {
+  const r = await fetch(URLS.reviews, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'reviews_edit', id, text, rating, token: getToken() }) });
   return r.json();
 }
 

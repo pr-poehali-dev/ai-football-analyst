@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import Icon from '@/components/ui/icon';
 import { logout } from '@/lib/auth';
-import { apiOwnerList, apiOwnerGrantVip, apiOwnerRevokeVip } from '@/lib/api';
+import { apiOwnerList, apiOwnerGrantVip, apiOwnerRevokeVip, apiReviewsOwnerList, apiReviewsHide, apiReviewsEdit } from '@/lib/api';
 
 const ANGELA_AVATAR = 'https://cdn.poehali.dev/projects/b5ba154b-3ca7-46f5-b777-9707c73ee985/bucket/5884d2d4-4821-4d6c-9720-09b91b15dde1.jpeg';
 const OWNER_NICKNAME = 'creator';
@@ -20,6 +20,128 @@ interface Props {
   onLogout: () => void;
   onGoVip: () => void;
   onGoHotForecasts: () => void;
+}
+
+interface ReviewItem {
+  id: number; nickname: string; rating: number; text: string; is_visible: boolean; created_at: string;
+}
+
+function ReviewsPanel() {
+  const [reviews, setReviews] = useState<ReviewItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [editId, setEditId] = useState<number | null>(null);
+  const [editText, setEditText] = useState('');
+  const [editRating, setEditRating] = useState(5);
+  const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null);
+
+  useEffect(() => { load(); }, []);
+
+  const load = async () => {
+    setLoading(true);
+    const data = await apiReviewsOwnerList();
+    setLoading(false);
+    if (data.reviews) setReviews(data.reviews);
+  };
+
+  const showMsg = (text: string, ok: boolean) => {
+    setMsg({ text, ok });
+    setTimeout(() => setMsg(null), 3000);
+  };
+
+  const hide = async (id: number) => {
+    const data = await apiReviewsHide(id);
+    if (data.success) { showMsg('Скрыт', true); load(); }
+    else showMsg(data.error || 'Ошибка', false);
+  };
+
+  const startEdit = (r: ReviewItem) => {
+    setEditId(r.id); setEditText(r.text); setEditRating(r.rating);
+  };
+
+  const saveEdit = async () => {
+    if (!editId) return;
+    const data = await apiReviewsEdit(editId, editText, editRating);
+    if (data.success) { showMsg('Сохранено', true); setEditId(null); load(); }
+    else showMsg(data.error || 'Ошибка', false);
+  };
+
+  return (
+    <div className="bg-card border border-yellow-500/20 rounded-2xl overflow-hidden">
+      <div className="px-4 py-3 border-b border-border bg-yellow-500/5 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Icon name="Star" size={14} className="text-yellow-400" />
+          <span className="font-display text-xs font-bold text-foreground tracking-wider">ОТЗЫВЫ КЛИЕНТОВ</span>
+          <span className="text-[10px] text-muted-foreground font-body">({reviews.length})</span>
+        </div>
+        <button onClick={load} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground transition-colors">
+          <Icon name="RefreshCw" size={12} />
+        </button>
+      </div>
+      <div className="p-3 space-y-2">
+        {msg && <div className={`text-xs font-body px-3 py-2 rounded-lg ${msg.ok ? 'bg-primary/10 text-primary' : 'bg-destructive/10 text-destructive'}`}>{msg.text}</div>}
+        {loading ? (
+          <div className="text-center text-xs text-muted-foreground font-body py-4">Загрузка...</div>
+        ) : reviews.length === 0 ? (
+          <div className="text-center text-xs text-muted-foreground font-body py-4">Отзывов пока нет</div>
+        ) : (
+          <div className="space-y-2 max-h-72 overflow-y-auto">
+            {reviews.map(r => (
+              <div key={r.id} className={`rounded-xl border p-3 ${r.is_visible ? 'bg-background border-border' : 'bg-muted/20 border-border/40 opacity-60'}`}>
+                {editId === r.id ? (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-1">
+                      {[1,2,3,4,5].map(s => (
+                        <button key={s} onClick={() => setEditRating(s)} className="cursor-pointer">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill={editRating >= s ? '#f59e0b' : 'none'} stroke={editRating >= s ? '#f59e0b' : '#6b7280'} strokeWidth="2">
+                            <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+                          </svg>
+                        </button>
+                      ))}
+                    </div>
+                    <textarea value={editText} onChange={e => setEditText(e.target.value)} rows={2}
+                      className="w-full bg-card border border-border rounded-lg px-2 py-1.5 text-xs font-body text-foreground focus:outline-none focus:border-primary/50 resize-none" />
+                    <div className="flex gap-1.5">
+                      <button onClick={saveEdit} className="text-[10px] font-body px-2.5 py-1 rounded-lg bg-primary text-primary-foreground">Сохранить</button>
+                      <button onClick={() => setEditId(null)} className="text-[10px] font-body px-2.5 py-1 rounded-lg border border-border text-muted-foreground">Отмена</button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs font-semibold font-body text-foreground">{r.nickname}</span>
+                        {!r.is_visible && <span className="text-[9px] text-muted-foreground font-body border border-border px-1 rounded">скрыт</span>}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        {[1,2,3,4,5].map(s => (
+                          <svg key={s} width="10" height="10" viewBox="0 0 24 24" fill={r.rating >= s ? '#f59e0b' : 'none'} stroke={r.rating >= s ? '#f59e0b' : '#6b7280'} strokeWidth="2">
+                            <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+                          </svg>
+                        ))}
+                      </div>
+                    </div>
+                    <p className="text-xs text-foreground/80 font-body leading-relaxed mb-2">{r.text}</p>
+                    <div className="flex gap-1.5">
+                      <button onClick={() => startEdit(r)}
+                        className="text-[10px] font-body px-2 py-1 rounded-lg border border-border text-muted-foreground hover:text-foreground transition-all flex items-center gap-1">
+                        <Icon name="Pencil" size={9} />Редактировать
+                      </button>
+                      {r.is_visible && (
+                        <button onClick={() => hide(r.id)}
+                          className="text-[10px] font-body px-2 py-1 rounded-lg border border-destructive/30 text-destructive hover:bg-destructive/10 transition-all flex items-center gap-1">
+                          <Icon name="EyeOff" size={9} />Скрыть
+                        </button>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
 
 function OwnerPanel() {
@@ -232,8 +354,9 @@ export default function ProfilePage({ nickname, isVip, onLogout, onGoVip, onGoHo
           </button>
         </div>
 
-        {/* Owner VIP panel */}
+        {/* Owner panels */}
         {isOwner && <OwnerPanel />}
+        {isOwner && <ReviewsPanel />}
 
         {/* Angela message */}
         <div className="flex items-start gap-3 bg-card border border-primary/15 rounded-xl p-4">

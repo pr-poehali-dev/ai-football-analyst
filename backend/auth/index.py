@@ -322,6 +322,87 @@ def handler(event: dict, context) -> dict:
                 conn.commit()
                 return {'statusCode': 200, 'headers': CORS, 'body': json.dumps({'success': True, 'message': f'VIP снят с «{nickname}»'})}
 
+        # --- REVIEWS ---
+        elif action == 'reviews_list':
+            cur.execute(f"""
+                SELECT id, nickname, rating, text, created_at
+                FROM {SCHEMA}.reviews WHERE is_visible = TRUE
+                ORDER BY created_at DESC LIMIT 50
+            """)
+            rows = cur.fetchall()
+            reviews = [{'id': r[0], 'nickname': r[1], 'rating': r[2], 'text': r[3],
+                        'created_at': r[4].isoformat() if r[4] else None} for r in rows]
+            return {'statusCode': 200, 'headers': CORS, 'body': json.dumps({'reviews': reviews})}
+
+        elif action == 'reviews_add':
+            token_val = body.get('token', '')
+            cur.execute(
+                f"""SELECT u.id, u.nickname FROM {SCHEMA}.sessions s JOIN {SCHEMA}.users u ON u.id=s.user_id
+                    WHERE s.token=%s AND s.expires_at > NOW()""", (token_val,)
+            )
+            user_row = cur.fetchone()
+            if not user_row:
+                return {'statusCode': 401, 'headers': CORS, 'body': json.dumps({'error': 'Войди чтобы оставить отзыв'})}
+            rating = max(1, min(5, int(body.get('rating', 5))))
+            text = (body.get('text') or '').strip()
+            if len(text) < 5:
+                return {'statusCode': 400, 'headers': CORS, 'body': json.dumps({'error': 'Напиши хотя бы несколько слов'})}
+            if len(text) > 500:
+                return {'statusCode': 400, 'headers': CORS, 'body': json.dumps({'error': 'Максимум 500 символов'})}
+            cur.execute(f"SELECT id FROM {SCHEMA}.reviews WHERE user_id=%s", (user_row[0],))
+            if cur.fetchone():
+                cur.execute(f"UPDATE {SCHEMA}.reviews SET rating=%s, text=%s, is_visible=TRUE, updated_at=NOW() WHERE user_id=%s",
+                            (rating, text, user_row[0]))
+            else:
+                cur.execute(f"INSERT INTO {SCHEMA}.reviews (user_id, nickname, rating, text) VALUES (%s,%s,%s,%s)",
+                            (user_row[0], user_row[1], rating, text))
+            conn.commit()
+            return {'statusCode': 200, 'headers': CORS, 'body': json.dumps({'success': True})}
+
+        elif action == 'reviews_owner_list':
+            token_val = body.get('token', '')
+            cur.execute(
+                f"""SELECT u.nickname FROM {SCHEMA}.sessions s JOIN {SCHEMA}.users u ON u.id=s.user_id
+                    WHERE s.token=%s AND s.expires_at > NOW()""", (token_val,)
+            )
+            owner = cur.fetchone()
+            if not owner or owner[0] != 'creator':
+                return {'statusCode': 403, 'headers': CORS, 'body': json.dumps({'error': 'Доступ запрещён'})}
+            cur.execute(f"""SELECT id, nickname, rating, text, is_visible, created_at
+                           FROM {SCHEMA}.reviews ORDER BY created_at DESC""")
+            rows = cur.fetchall()
+            reviews = [{'id': r[0], 'nickname': r[1], 'rating': r[2], 'text': r[3],
+                        'is_visible': r[4], 'created_at': r[5].isoformat() if r[5] else None} for r in rows]
+            return {'statusCode': 200, 'headers': CORS, 'body': json.dumps({'reviews': reviews})}
+
+        elif action in ('reviews_hide', 'reviews_edit'):
+            token_val = body.get('token', '')
+            cur.execute(
+                f"""SELECT u.nickname FROM {SCHEMA}.sessions s JOIN {SCHEMA}.users u ON u.id=s.user_id
+                    WHERE s.token=%s AND s.expires_at > NOW()""", (token_val,)
+            )
+            owner = cur.fetchone()
+            if not owner or owner[0] != 'creator':
+                return {'statusCode': 403, 'headers': CORS, 'body': json.dumps({'error': 'Доступ запрещён'})}
+            review_id = int(body.get('id', 0))
+            if action == 'reviews_hide':
+                cur.execute(f"UPDATE {SCHEMA}.reviews SET is_visible=FALSE WHERE id=%s", (review_id,))
+                conn.commit()
+                return {'statusCode': 200, 'headers': CORS, 'body': json.dumps({'success': True, 'message': 'Отзыв скрыт'})}
+            elif action == 'reviews_edit':
+                new_text = (body.get('text') or '').strip()
+                new_rating = body.get('rating')
+                if not new_text:
+                    return {'statusCode': 400, 'headers': CORS, 'body': json.dumps({'error': 'Текст пустой'})}
+                if new_rating:
+                    cur.execute(f"UPDATE {SCHEMA}.reviews SET text=%s, rating=%s, updated_at=NOW() WHERE id=%s",
+                                (new_text, int(new_rating), review_id))
+                else:
+                    cur.execute(f"UPDATE {SCHEMA}.reviews SET text=%s, updated_at=NOW() WHERE id=%s",
+                                (new_text, review_id))
+                conn.commit()
+                return {'statusCode': 200, 'headers': CORS, 'body': json.dumps({'success': True, 'message': 'Отзыв обновлён'})}
+
         return {'statusCode': 404, 'headers': CORS, 'body': json.dumps({'error': 'Not found'})}
 
     finally:

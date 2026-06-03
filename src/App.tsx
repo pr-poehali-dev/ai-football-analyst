@@ -14,11 +14,12 @@ import VipPage from '@/pages/VipPage';
 import AdminPage from '@/pages/AdminPage';
 import DonatePage from '@/pages/DonatePage';
 import SupportPage from '@/pages/SupportPage';
+import ReviewsPage from '@/pages/ReviewsPage';
 import { loadUser } from '@/lib/auth';
 
 const ANGELA_AVATAR = 'https://cdn.poehali.dev/projects/b5ba154b-3ca7-46f5-b777-9707c73ee985/bucket/5884d2d4-4821-4d6c-9720-09b91b15dde1.jpeg';
 
-type Tab = 'chat' | 'matches' | 'teams' | 'stats' | 'forecast' | 'calendar' | 'hot' | 'profile' | 'vip' | 'donate' | 'support';
+type Tab = 'chat' | 'matches' | 'teams' | 'stats' | 'forecast' | 'calendar' | 'hot' | 'profile' | 'vip' | 'donate' | 'support' | 'reviews';
 
 const MAIN_TABS: { id: Tab; label: string; icon: string; short: string }[] = [
   { id: 'chat',     label: 'Чат',        icon: 'MessageCircle', short: 'Чат' },
@@ -140,13 +141,14 @@ export default function App() {
           </div>;
       case 'donate':   return <DonatePage />;
       case 'support':  return <SupportPage />;
+      case 'reviews':  return <ReviewsPage nickname={user?.nickname} onLogin={() => setShowAuth(true)} />;
     }
   };
 
   const BOTTOM_TABS: { id: Tab; icon: string; short: string; badge?: boolean }[] = [
     { id: 'chat',    icon: 'MessageCircle', short: 'Чат' },
     { id: 'hot',     icon: 'Flame',         short: '🔥' },
-    { id: 'support', icon: 'Headphones',    short: 'Помощь' },
+    { id: 'reviews', icon: 'Star',           short: 'Отзывы' },
     { id: 'donate',  icon: 'Coffee',        short: '☕' },
     { id: 'profile', icon: 'User',          short: 'Профиль' },
   ];
@@ -253,6 +255,17 @@ export default function App() {
             >
               <Icon name="Coffee" size={15} />
               Угостить эспрессо
+            </button>
+
+            {/* Reviews */}
+            <button onClick={() => setTab('reviews')}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-body transition-all text-left
+                ${tab === 'reviews'
+                  ? 'bg-yellow-500/10 text-yellow-400 font-semibold border-l-2 border-yellow-500 pl-[10px]'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'}`}
+            >
+              <Icon name="Star" size={15} />
+              Отзывы
             </button>
 
             {/* Support */}
