@@ -11,6 +11,7 @@ import AuthPage from '@/pages/AuthPage';
 import ProfilePage from '@/pages/ProfilePage';
 import HotForecastsPage from '@/pages/HotForecastsPage';
 import VipPage from '@/pages/VipPage';
+import AdminPage from '@/pages/AdminPage';
 import { loadUser } from '@/lib/auth';
 
 const ANGELA_AVATAR = 'https://cdn.poehali.dev/projects/b5ba154b-3ca7-46f5-b777-9707c73ee985/files/b3cba21b-b8b7-4945-9402-017eb6079f89.jpg';
@@ -84,6 +85,10 @@ export default function App() {
     if (updated) setUser({ ...updated, is_vip: true });
     setTab('profile');
   };
+
+  if (window.location.pathname === '/admin') {
+    return <AdminPage />;
+  }
 
   if (showAuth) {
     return (

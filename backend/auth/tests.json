@@ -1,11 +1,11 @@
 {
   "tests": [
     {
-      "name": "Register user",
+      "name": "Admin list (без ключа — 403)",
       "method": "POST",
       "path": "/",
-      "body": "{\"action\": \"register\", \"nickname\": \"TestUser99\", \"password\": \"pass123456\"}",
-      "expectedStatus": 200
+      "body": "{\"action\": \"admin_list\"}",
+      "expectedStatus": 403
     },
     {
       "name": "Login user",
