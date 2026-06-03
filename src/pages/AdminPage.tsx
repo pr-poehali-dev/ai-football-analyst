@@ -15,11 +15,20 @@ interface User {
 }
 
 async function adminRequest(url: string, adminKey: string, options?: RequestInit) {
-  const res = await fetch(url, {
-    ...options,
-    headers: { 'Content-Type': 'application/json', 'X-Admin-Key': adminKey, ...(options?.headers || {}) },
-  });
-  return res.json();
+  try {
+    const res = await fetch(url, {
+      ...options,
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Key': adminKey, ...(options?.headers || {}) },
+    });
+    const text = await res.text();
+    try {
+      return { _status: res.status, ...JSON.parse(text) };
+    } catch {
+      return { _status: res.status, _raw: text };
+    }
+  } catch (e: unknown) {
+    return { _networkError: e instanceof Error ? e.message : String(e) };
+  }
 }
 
 export default function AdminPage() {
@@ -40,19 +49,25 @@ export default function AdminPage() {
   };
 
   const login = async () => {
-    if (!keyInput.trim() || !adminUrl) return;
+    if (!keyInput.trim()) return;
     setLoading(true);
     const data = await adminRequest(adminUrl, keyInput.trim(), {
       method: 'POST', body: JSON.stringify({ action: 'admin_list' }),
     });
     setLoading(false);
-    if (data.users) {
+    if (data._networkError) {
+      showMsg(`Ошибка сети: ${data._networkError}`, false);
+    } else if (data._status === 403) {
+      showMsg('Неверный пароль. Проверь секрет ADMIN_KEY.', false);
+    } else if (data._status && data._status !== 200) {
+      showMsg(`Ошибка сервера: ${data._status}. ${data.error || data._raw || ''}`, false);
+    } else if (data.users) {
       localStorage.setItem(ADMIN_URL_KEY, keyInput.trim());
       setAdminKey(keyInput.trim());
       setUsers(data.users);
       setAuthed(true);
     } else {
-      showMsg('Неверный ключ', false);
+      showMsg(`Неожиданный ответ: ${JSON.stringify(data)}`, false);
     }
   };
 
