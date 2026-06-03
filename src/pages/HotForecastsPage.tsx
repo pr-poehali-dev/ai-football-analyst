@@ -27,6 +27,7 @@ interface Forecast {
 interface Props {
   isVip: boolean;
   nickname: string;
+  onLogin: () => void;
 }
 
 function Countdown({ validUntil }: { validUntil: string }) {
@@ -64,7 +65,7 @@ function ProbBar({ home, draw, away }: { home: number; draw: number; away: numbe
   );
 }
 
-export default function HotForecastsPage({ isVip, nickname }: Props) {
+export default function HotForecastsPage({ isVip, nickname, onLogin }: Props) {
   const [forecasts, setForecasts] = useState<Forecast[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -92,6 +93,67 @@ export default function HotForecastsPage({ isVip, nickname }: Props) {
     'Средний': 'text-yellow-400',
     'Высокий': 'text-destructive',
   };
+
+  if (!nickname) {
+    return (
+      <div className="flex flex-col h-full overflow-y-auto scrollbar-thin">
+        <div className="px-6 py-5 border-b border-border">
+          <div className="flex items-center gap-2">
+            <Icon name="Flame" size={20} className="text-destructive" />
+            <h1 className="font-display text-2xl font-bold text-foreground tracking-wider">ГОРЯЧИЕ ПРОГНОЗЫ</h1>
+          </div>
+          <p className="text-xs text-muted-foreground font-body mt-0.5">Ежедневная аналитика Анжелы</p>
+        </div>
+        <div className="flex-1 flex flex-col items-center justify-center px-6 py-12 text-center gap-5">
+          {/* Blurred preview cards */}
+          <div className="w-full max-w-sm space-y-3 relative mb-2">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="bg-card border border-border rounded-2xl p-4 blur-sm select-none">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="h-3 w-24 bg-muted rounded" />
+                  <div className="h-3 w-16 bg-muted rounded" />
+                </div>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="h-4 w-28 bg-muted rounded" />
+                  <div className="text-muted-foreground font-body text-sm">vs</div>
+                  <div className="h-4 w-28 bg-muted rounded" />
+                </div>
+                <div className="h-2 bg-muted rounded mb-1" />
+                <div className="h-3 w-32 bg-muted rounded" />
+              </div>
+            ))}
+            {/* Lock overlay */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="bg-background/80 backdrop-blur-sm rounded-2xl px-5 py-4 border border-border flex flex-col items-center gap-2">
+                <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center">
+                  <Icon name="Lock" size={18} className="text-primary" />
+                </div>
+                <span className="text-xs font-semibold font-body text-foreground">Только для участников</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="w-10 h-10 rounded-full bg-destructive/10 border border-destructive/30 flex items-center justify-center">
+            <Icon name="Flame" size={20} className="text-destructive" />
+          </div>
+          <div>
+            <h2 className="font-display text-xl font-bold text-foreground tracking-wider mb-2">ВОЙДИ, ЧТОБЫ ВИДЕТЬ ПРОГНОЗЫ</h2>
+            <p className="text-sm text-muted-foreground font-body leading-relaxed max-w-xs">
+              Горячие прогнозы Анжелы доступны только зарегистрированным пользователям
+            </p>
+          </div>
+          <button
+            onClick={onLogin}
+            className="bg-primary text-primary-foreground px-8 py-3 rounded-xl text-sm font-semibold font-body hover:bg-primary/90 transition-all flex items-center gap-2"
+          >
+            <Icon name="LogIn" size={15} />
+            Войти / Регистрация
+          </button>
+          <p className="text-[11px] text-muted-foreground font-body">Регистрация бесплатна и занимает 30 секунд</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full overflow-y-auto scrollbar-thin">

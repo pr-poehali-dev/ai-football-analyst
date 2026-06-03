@@ -110,7 +110,7 @@ export default function App() {
       case 'stats':    return <StatsPage />;
       case 'forecast': return <ForecastPage />;
       case 'calendar': return <CalendarPage />;
-      case 'hot':      return <HotForecastsPage isVip={user?.is_vip || false} nickname={user?.nickname || ''} />;
+      case 'hot':      return <HotForecastsPage isVip={user?.is_vip || false} nickname={user?.nickname || ''} onLogin={() => setShowAuth(true)} />;
       case 'profile':  return user
         ? <ProfilePage
             nickname={user.nickname}
