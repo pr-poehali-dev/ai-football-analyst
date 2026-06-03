@@ -104,7 +104,7 @@ export default function App() {
 
   const renderPage = () => {
     switch (tab) {
-      case 'chat':     return <ChatPage nickname={user?.nickname} />;
+      case 'chat':     return <ChatPage nickname={user?.nickname} onLogin={() => setShowAuth(true)} />;
       case 'matches':  return <MatchesPage />;
       case 'teams':    return <TeamsPage />;
       case 'stats':    return <StatsPage />;

@@ -31,9 +31,10 @@ function formatMessage(text: string) {
 
 interface Props {
   nickname?: string;
+  onLogin?: () => void;
 }
 
-export default function ChatPage({ nickname }: Props) {
+export default function ChatPage({ nickname, onLogin }: Props) {
   const initMsg: Message = {
     id: 1, role: 'angela',
     text: nickname
@@ -128,6 +129,78 @@ export default function ChatPage({ nickname }: Props) {
       sendMessage();
     }
   };
+
+  if (!nickname) {
+    return (
+      <div className="flex flex-col h-full overflow-y-auto scrollbar-thin">
+        {/* Header */}
+        <div className="px-4 py-3 border-b border-border flex items-center gap-3">
+          <div className="relative">
+            <img src={ANGELA_AVATAR} alt="Анжела" className="w-9 h-9 rounded-full object-cover object-top" />
+            <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-primary rounded-full border-2 border-background" />
+          </div>
+          <div>
+            <div className="font-display text-sm font-bold text-foreground tracking-wider">АНЖЕЛА</div>
+            <div className="text-[10px] text-primary font-body">AI Football Analyst</div>
+          </div>
+        </div>
+
+        {/* Blurred chat preview */}
+        <div className="flex-1 flex flex-col relative overflow-hidden">
+          <div className="flex-1 px-4 py-4 space-y-4 blur-sm select-none pointer-events-none">
+            {/* Fake angela message */}
+            <div className="flex gap-2 justify-start">
+              <img src={ANGELA_AVATAR} alt="" className="w-7 h-7 rounded-full object-cover object-top flex-shrink-0 mt-1" />
+              <div className="bg-card border border-border rounded-2xl rounded-tl-sm px-3 py-2.5 max-w-[75%]">
+                <div className="h-3 w-48 bg-muted rounded mb-1.5" />
+                <div className="h-3 w-36 bg-muted rounded mb-1.5" />
+                <div className="h-3 w-24 bg-muted rounded" />
+              </div>
+            </div>
+            {/* Fake user message */}
+            <div className="flex gap-2 justify-end">
+              <div className="bg-primary/20 rounded-2xl rounded-tr-sm px-3 py-2.5 max-w-[65%]">
+                <div className="h-3 w-32 bg-primary/30 rounded" />
+              </div>
+            </div>
+            {/* Fake angela long message */}
+            <div className="flex gap-2 justify-start">
+              <img src={ANGELA_AVATAR} alt="" className="w-7 h-7 rounded-full object-cover object-top flex-shrink-0 mt-1" />
+              <div className="bg-card border border-border rounded-2xl rounded-tl-sm px-3 py-2.5 max-w-[80%]">
+                <div className="h-3 w-56 bg-muted rounded mb-1.5" />
+                <div className="h-3 w-44 bg-muted rounded mb-1.5" />
+                <div className="h-3 w-52 bg-muted rounded mb-1.5" />
+                <div className="h-3 w-32 bg-muted rounded" />
+              </div>
+            </div>
+          </div>
+
+          {/* Lock overlay */}
+          <div className="absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-[2px]">
+            <div className="flex flex-col items-center gap-5 px-8 text-center">
+              <div className="w-14 h-14 rounded-full bg-primary/10 border-2 border-primary/30 flex items-center justify-center">
+                <Icon name="Lock" size={24} className="text-primary" />
+              </div>
+              <div>
+                <h2 className="font-display text-lg font-bold text-foreground tracking-wider mb-2">ЧАТ ТОЛЬКО ДЛЯ УЧАСТНИКОВ</h2>
+                <p className="text-sm text-muted-foreground font-body leading-relaxed">
+                  Зарегистрируйся бесплатно, чтобы общаться с Анжелой и получать прогнозы
+                </p>
+              </div>
+              <button
+                onClick={onLogin}
+                className="bg-primary text-primary-foreground px-8 py-3 rounded-xl text-sm font-semibold font-body hover:bg-primary/90 transition-all flex items-center gap-2 w-full justify-center"
+              >
+                <Icon name="LogIn" size={15} />
+                Войти / Регистрация
+              </button>
+              <p className="text-[11px] text-muted-foreground font-body">Бесплатно · 30 секунд</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full relative">
