@@ -11,7 +11,7 @@ function getToken() {
 
 function authHeaders() {
   const t = getToken();
-  return t ? { 'Content-Type': 'application/json', 'Authorization': `Bearer ${t}` } : { 'Content-Type': 'application/json' };
+  return t ? { 'Content-Type': 'application/json', 'X-Authorization': `Bearer ${t}` } : { 'Content-Type': 'application/json' };
 }
 
 export async function apiRegister(nickname: string, password: string) {

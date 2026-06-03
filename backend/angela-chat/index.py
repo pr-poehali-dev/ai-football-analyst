@@ -1,4 +1,4 @@
-"""Чат с Анжелой — AI Football Analyst"""
+"""Чат с Анжелой — AI Football Analyst v2"""
 import json
 import os
 import psycopg2
