@@ -167,39 +167,90 @@ export default function VipPage({ isVip, nickname, onVipActivated }: Props) {
           </div>
         </div>
 
-        {/* Error */}
-        {error && (
-          <div className="bg-destructive/10 border border-destructive/30 rounded-xl px-4 py-3 text-sm text-destructive font-body flex items-center gap-2">
-            <Icon name="AlertCircle" size={14} className="flex-shrink-0" />
-            {error}
+        {/* Payment block */}
+        <div className="bg-card border border-yellow-500/30 rounded-2xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-border/60 bg-yellow-500/5">
+            <div className="flex items-center gap-2">
+              <Icon name="QrCode" size={16} className="text-yellow-400" />
+              <span className="font-display text-sm font-bold text-foreground tracking-wider">ОПЛАТА ЧЕРЕЗ СБП</span>
+            </div>
+            <p className="text-[11px] text-muted-foreground font-body mt-0.5">Ozon Банк · Система быстрых платежей</p>
           </div>
-        )}
 
-        {/* Success */}
-        {success && (
-          <div className="bg-primary/10 border border-primary/30 rounded-xl px-4 py-3 text-sm text-primary font-body flex items-center gap-2 animate-fade-in">
-            <Icon name="CheckCircle" size={14} className="flex-shrink-0" />
-            VIP активирован! Добро пожаловать 🎉
+          <div className="p-5 flex flex-col items-center gap-4">
+            {/* QR */}
+            <div className="bg-white rounded-2xl p-3 shadow-lg shadow-black/30">
+              <img
+                src="https://cdn.poehali.dev/projects/b5ba154b-3ca7-46f5-b777-9707c73ee985/bucket/c930221e-3473-4aa5-a270-3f96ede2ed7b.jpeg"
+                alt="QR-код СБП Ozon Банк"
+                className="w-48 h-48 object-contain rounded-lg"
+              />
+            </div>
+
+            {/* Instructions */}
+            <div className="w-full space-y-2">
+              {[
+                { n: '1', text: 'Открой приложение своего банка' },
+                { n: '2', text: 'Нажми «Оплатить» → «По QR-коду»' },
+                { n: '3', text: 'Переведи ровно 1 200 ₽' },
+                { n: '4', text: 'В комментарии укажи свой никнейм' },
+              ].map(s => (
+                <div key={s.n} className="flex items-center gap-3">
+                  <span className="w-6 h-6 rounded-full bg-yellow-500/15 border border-yellow-500/30 text-yellow-400 text-xs font-bold flex items-center justify-center flex-shrink-0 font-body">
+                    {s.n}
+                  </span>
+                  <span className="text-xs text-foreground/80 font-body">{s.text}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Amount */}
+            <div className="w-full bg-yellow-500/8 border border-yellow-500/20 rounded-xl px-4 py-3 flex items-center justify-between">
+              <span className="text-xs text-muted-foreground font-body">Сумма перевода</span>
+              <span className="font-display text-xl font-bold text-yellow-400">1 200 ₽</span>
+            </div>
           </div>
-        )}
+        </div>
 
-        {/* CTA */}
-        <button
-          onClick={handleBuy}
-          disabled={loading || success}
-          className="w-full py-4 rounded-xl font-display text-base font-bold tracking-wider bg-gradient-to-r from-yellow-500 to-yellow-400 text-black hover:opacity-90 disabled:opacity-50 transition-all hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2"
-        >
-          {loading ? (
-            <><span className="typing-dot bg-black" /><span className="typing-dot bg-black" /><span className="typing-dot bg-black" /></>
-          ) : success ? (
-            <><Icon name="Check" size={18} />АКТИВИРОВАНО</>
-          ) : (
-            <><Icon name="Crown" size={18} />КУПИТЬ VIP · 1 200 ₽</>
+        {/* Confirm payment button */}
+        <div className="bg-card border border-border rounded-xl p-4">
+          <p className="text-xs text-muted-foreground font-body mb-3 text-center">
+            После оплаты нажми кнопку — VIP активируется вручную в течение нескольких минут
+          </p>
+
+          {/* Error */}
+          {error && (
+            <div className="bg-destructive/10 border border-destructive/30 rounded-xl px-3 py-2.5 text-xs text-destructive font-body flex items-center gap-2 mb-3">
+              <Icon name="AlertCircle" size={13} className="flex-shrink-0" />
+              {error}
+            </div>
           )}
-        </button>
 
-        <p className="text-[10px] text-muted-foreground/50 text-center font-body pb-4">
-          Подписка активируется сразу после оплаты. Не является финансовым советом.
+          {/* Success */}
+          {success && (
+            <div className="bg-primary/10 border border-primary/30 rounded-xl px-3 py-2.5 text-xs text-primary font-body flex items-center gap-2 mb-3 animate-fade-in">
+              <Icon name="CheckCircle" size={13} className="flex-shrink-0" />
+              Заявка отправлена! VIP будет активирован в ближайшее время 🎉
+            </div>
+          )}
+
+          <button
+            onClick={handleBuy}
+            disabled={loading || success}
+            className="w-full py-3.5 rounded-xl font-display text-sm font-bold tracking-wider bg-gradient-to-r from-yellow-500 to-yellow-400 text-black hover:opacity-90 disabled:opacity-50 transition-all hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2"
+          >
+            {loading ? (
+              <><span className="typing-dot bg-black" /><span className="typing-dot bg-black" /><span className="typing-dot bg-black" /></>
+            ) : success ? (
+              <><Icon name="Check" size={16} />ЗАЯВКА ОТПРАВЛЕНА</>
+            ) : (
+              <><Icon name="CheckCircle" size={16} />Я ОПЛАТИЛ — АКТИВИРОВАТЬ VIP</>
+            )}
+          </button>
+        </div>
+
+        <p className="text-[10px] text-muted-foreground/40 text-center font-body pb-4 leading-relaxed">
+          После подтверждения оплаты VIP активируется вручную.<br />Не является финансовым советом.
         </p>
       </div>
     </div>
