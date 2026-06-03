@@ -16,9 +16,14 @@ interface User {
 
 async function adminRequest(url: string, adminKey: string, options?: RequestInit) {
   try {
+    // Вставляем admin_key прямо в тело запроса (заголовки фильтруются прокси)
+    const body = options?.body ? JSON.parse(options.body as string) : {};
+    const newBody = JSON.stringify({ ...body, admin_key: adminKey });
     const res = await fetch(url, {
       ...options,
-      headers: { 'Content-Type': 'application/json', 'X-Admin-Key': adminKey, ...(options?.headers || {}) },
+      method: options?.method || 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: newBody,
     });
     const text = await res.text();
     try {
