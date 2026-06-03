@@ -185,7 +185,7 @@ def handler(event: dict, context) -> dict:
 
         elif action == 'me':
             auth = event.get('headers', {}).get('x-authorization', '')
-            token = auth.replace('Bearer ', '')
+            token = body.get('token', '') or auth.replace('Bearer ', '')
             cur.execute(
                 f"""SELECT u.id, u.nickname, u.is_vip, u.vip_expires_at, u.forecasts_used_today, u.forecasts_reset_at
                     FROM {SCHEMA}.sessions s JOIN {SCHEMA}.users u ON u.id=s.user_id
@@ -205,7 +205,7 @@ def handler(event: dict, context) -> dict:
 
         elif action == 'buy-vip':
             auth = event.get('headers', {}).get('x-authorization', '')
-            token = auth.replace('Bearer ', '')
+            token = body.get('token', '') or auth.replace('Bearer ', '')
             cur.execute(
                 f"SELECT u.id FROM {SCHEMA}.sessions s JOIN {SCHEMA}.users u ON u.id=s.user_id WHERE s.token=%s AND s.expires_at > NOW()",
                 (token,)

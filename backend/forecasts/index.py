@@ -315,7 +315,8 @@ def handler(event: dict, context) -> dict:
         return {'statusCode': 200, 'headers': CORS, 'body': ''}
 
     auth = event.get('headers', {}).get('x-authorization', '')
-    token = auth.replace('Bearer ', '')
+    params = event.get('queryStringParameters') or {}
+    token = params.get('token', '') or auth.replace('Bearer ', '')
 
     conn = get_conn()
     cur = conn.cursor()

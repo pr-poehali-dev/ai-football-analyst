@@ -35,8 +35,8 @@ export async function apiLogin(nickname: string, password: string) {
 export async function apiMe() {
   const r = await fetch(URLS.auth, {
     method: 'POST',
-    headers: authHeaders(),
-    body: JSON.stringify({ action: 'me' }),
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'me', token: getToken() }),
   });
   return r.json();
 }
@@ -44,16 +44,16 @@ export async function apiMe() {
 export async function apiBuyVip() {
   const r = await fetch(URLS.auth, {
     method: 'POST',
-    headers: authHeaders(),
-    body: JSON.stringify({ action: 'buy-vip' }),
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'buy-vip', token: getToken() }),
   });
   return r.json();
 }
 
 export async function apiForecasts() {
-  const r = await fetch(URLS.forecasts, {
+  const r = await fetch(URLS.forecasts + '?token=' + getToken(), {
     method: 'GET',
-    headers: authHeaders(),
+    headers: { 'Content-Type': 'application/json' },
   });
   return r.json();
 }
