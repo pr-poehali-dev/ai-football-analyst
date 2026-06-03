@@ -185,7 +185,7 @@ export default function VipPage({ isVip, nickname, onVipActivated }: Props) {
 
               {/* Bank logos */}
               <div className="flex items-center gap-2 mb-3">
-                <div className="text-[10px] text-muted-foreground font-body">Только:</div>
+                <div className="text-[10px] text-muted-foreground font-body">Получаем на:</div>
                 {/* Ozon Bank */}
                 <div className="flex items-center gap-1.5 bg-[#005BFF]/10 border border-[#005BFF]/30 rounded-lg px-2.5 py-1.5">
                   <div className="w-4 h-4 rounded-sm bg-[#005BFF] flex items-center justify-center flex-shrink-0">
@@ -200,10 +200,6 @@ export default function VipPage({ isVip, nickname, onVipActivated }: Props) {
                   </div>
                   <span className="text-[11px] text-[#21A038] font-bold font-body">Сбербанк</span>
                 </div>
-              </div>
-              <div className="flex items-center gap-1.5 bg-destructive/8 border border-destructive/20 rounded-lg px-3 py-2 mb-3">
-                <Icon name="AlertCircle" size={12} className="text-destructive flex-shrink-0" />
-                <span className="text-[10px] text-destructive font-body font-medium">Переводы с других банков не принимаются</span>
               </div>
 
               <div className="flex items-center justify-between gap-3">
