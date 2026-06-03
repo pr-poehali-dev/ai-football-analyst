@@ -241,12 +241,6 @@ def call_openai(messages, api_key):
         data = json.loads(resp.read())
     return data['choices'][0]['message']['content']
 
-FALLBACK = [
-    "Отличный вопрос! Назови конкретный матч или команду — и я разберу с реальными данными: форму, составы, xG, вероятности.",
-    "Смотри, ключевые факторы всегда: форма команд, травмы, домашнее преимущество и xG. Назови матч — проанализирую детально!",
-    "В футболе нет стопроцентных исходов, но статистика здорово помогает. Расскажи подробнее — о каком матче хочешь узнать?",
-]
-
 def handler(event: dict, context) -> dict:
     """Чат с Анжелой — AI-аналитик футбола с реальными данными API-Football"""
     if event.get('httpMethod') == 'OPTIONS':
@@ -275,10 +269,7 @@ def handler(event: dict, context) -> dict:
 
     nickname = user[1] if user else None
 
-    # Получаем реальные данные матчей
     fixtures = get_today_fixtures()
-
-    # Строим контекст из реальных данных
     last_user_msg = next((m['content'] for m in reversed(messages_in) if m['role'] == 'user'), '')
     sport_context = build_context_from_message(last_user_msg, fixtures)
 
@@ -292,22 +283,10 @@ def handler(event: dict, context) -> dict:
     messages = [{'role': 'system', 'content': system}] + messages_in[-12:]
 
     try:
-        if openai_key:
-            reply = call_openai(messages, openai_key)
-        else:
-            import random
-            reply = random.choice(FALLBACK)
-            if nickname:
-                reply = f"{nickname}, {reply[0].lower()}{reply[1:]}"
-
-        return {
-            'statusCode': 200, 'headers': CORS,
-            'body': json.dumps({'reply': reply, 'nickname': nickname})
-        }
-    except Exception:
-        import random
-        reply = random.choice(FALLBACK)
-        return {
-            'statusCode': 200, 'headers': CORS,
-            'body': json.dumps({'reply': reply, 'nickname': nickname})
-        }
+        reply = call_openai(messages, openai_key)
+    except Exception as e:
+        reply = f"Сервис временно недоступен. Попробуй ещё раз через несколько секунд."
+    return {
+        'statusCode': 200, 'headers': CORS,
+        'body': json.dumps({'reply': reply, 'nickname': nickname})
+    }

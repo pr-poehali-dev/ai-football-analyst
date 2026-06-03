@@ -161,80 +161,6 @@ is_hot: true если матч топовый или интересный"""
         return None
 
 
-SEED_FORECASTS = [
-    {
-        'home_team': 'Реал Мадрид', 'away_team': 'Барселона', 'league': '🇪🇸 Примера',
-        'match_date': 'Сегодня · 22:00',
-        'verdict': 'Победа Реала или ничья',
-        'prob_home': 45, 'prob_draw': 24, 'prob_away': 31,
-        'xg_home': 2.10, 'xg_away': 1.30,
-        'confidence': 72, 'risk_level': 'Средний',
-        'summary': 'Реал в лучшей форме последних 5 матчей. Мбаппе в огне — 4 гола за 3 игры. Барселона уязвима при контратаках.',
-        'arguments': '1. Реал выиграл 3 из 5 домашних встреч с Барсой;2. xG Реала выше 7 матчей подряд;3. Барселона без Гави слабее в центре',
-        'changer': 'Травма Мбаппе или удаление в первом тайме',
-        'is_hot': True, 'is_vip': False,
-    },
-    {
-        'home_team': 'Манчестер Сити', 'away_team': 'Арсенал', 'league': '🏴 АПЛ',
-        'match_date': 'Сегодня · 21:00',
-        'verdict': 'Ничья или победа Сити',
-        'prob_home': 38, 'prob_draw': 28, 'prob_away': 34,
-        'xg_home': 1.90, 'xg_away': 1.70,
-        'confidence': 61, 'risk_level': 'Высокий',
-        'summary': 'Оба клуба в топ-форме. Арсенал демонстрирует лучший прессинг в АПЛ. Матч равных.',
-        'arguments': '1. Арсенал не проигрывает 11 матчей подряд;2. Сити дома потерял очки дважды за месяц;3. PPDA Арсенала лучший в лиге',
-        'changer': 'Кто первым откроет счёт — определит тактику',
-        'is_hot': True, 'is_vip': False,
-    },
-    {
-        'home_team': 'Бавария', 'away_team': 'Боруссия Д', 'league': '🇩🇪 Бундеслига',
-        'match_date': 'Завтра · 19:30',
-        'verdict': 'Победа Баварии',
-        'prob_home': 52, 'prob_draw': 25, 'prob_away': 23,
-        'xg_home': 2.40, 'xg_away': 1.10,
-        'confidence': 78, 'risk_level': 'Низкий',
-        'summary': 'Бавария доминирует дома. Кейн в абсолютной форме. Боруссия нестабильна в гостях.',
-        'arguments': '1. Бавария выиграла 8 из 9 домашних матчей;2. Кейн — 36 голов в сезоне;3. Боруссия без победы в гостях 4 матча',
-        'changer': 'Ранние карточки или травма Кейна',
-        'is_hot': False, 'is_vip': True,
-    },
-    {
-        'home_team': 'ПСЖ', 'away_team': 'Марсель', 'league': '🇫🇷 Лига 1',
-        'match_date': 'Сегодня · 18:45',
-        'verdict': 'Победа ПСЖ',
-        'prob_home': 61, 'prob_draw': 22, 'prob_away': 17,
-        'xg_home': 2.80, 'xg_away': 0.90,
-        'confidence': 81, 'risk_level': 'Низкий',
-        'summary': 'ПСЖ доминирует в Лиге 1 с огромным отрывом. Марсель в гостях выглядит бледно последние 5 туров.',
-        'arguments': '1. ПСЖ выиграл 9 последних домашних матчей;2. xG ПСЖ 2.8 — лучший показатель в лиге;3. Марсель без побед в гостях 3 матча',
-        'changer': 'Массовые карточки и усталость от плотного графика',
-        'is_hot': True, 'is_vip': False,
-    },
-    {
-        'home_team': 'Интер', 'away_team': 'Милан', 'league': '🇮🇹 Серия А',
-        'match_date': 'Завтра · 20:45',
-        'verdict': 'Ничья или минимальная победа',
-        'prob_home': 38, 'prob_draw': 36, 'prob_away': 26,
-        'xg_home': 1.60, 'xg_away': 1.40,
-        'confidence': 55, 'risk_level': 'Высокий',
-        'summary': 'Дерби della Madonnina — всегда непредсказуемо. Интер чуть лучше по форме, но Милан опасен в контратаках.',
-        'arguments': '1. Последние 5 дерби — 3 ничьи;2. Интер лучше по xG дома;3. Милан без 2 ключевых игроков',
-        'changer': 'Первый гол полностью изменит картину матча',
-        'is_hot': False, 'is_vip': True,
-    },
-    {
-        'home_team': 'Ливерпуль', 'away_team': 'Манчестер Ю', 'league': '🏴 АПЛ',
-        'match_date': 'Суббота · 14:30',
-        'verdict': 'Победа Ливерпуля',
-        'prob_home': 58, 'prob_draw': 22, 'prob_away': 20,
-        'xg_home': 2.20, 'xg_away': 0.90,
-        'confidence': 74, 'risk_level': 'Средний',
-        'summary': 'Ливерпуль в великолепной форме, МЮ переживает кризис. Анфилд создаёт давление.',
-        'arguments': '1. Ливерпуль выиграл последние 4 домашних матча с МЮ;2. МЮ — 5-е место по xGA в лиге;3. Салах и Нуньес в полной боевой готовности',
-        'changer': 'Ранний гол МЮ изменит всю тактику матча',
-        'is_hot': True, 'is_vip': False,
-    },
-]
 
 def get_conn():
     return psycopg2.connect(os.environ['DATABASE_URL'])
@@ -381,25 +307,6 @@ def ensure_forecasts(cur, conn):
              changer, is_hot, is_vip)
         )
         added += 1
-
-    # Если реальных матчей не нашли — используем seed
-    if added == 0:
-        seeds = SEED_FORECASTS.copy()
-        random.shuffle(seeds)
-        for f in seeds:
-            if f['home_team'] not in existing and added < 6:
-                cur.execute(
-                    f"""INSERT INTO {SCHEMA}.forecasts
-                        (home_team, away_team, league, match_date, verdict, prob_home, prob_draw, prob_away,
-                         xg_home, xg_away, confidence, risk_level, summary, arguments, changer, is_hot, is_vip,
-                         valid_until)
-                        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, NOW()+INTERVAL '24 hours')""",
-                    (f['home_team'], f['away_team'], f['league'], f['match_date'], f['verdict'],
-                     f['prob_home'], f['prob_draw'], f['prob_away'], f['xg_home'], f['xg_away'],
-                     f['confidence'], f['risk_level'], f['summary'], f['arguments'], f['changer'],
-                     f['is_hot'], f['is_vip'])
-                )
-                added += 1
 
     conn.commit()
 
