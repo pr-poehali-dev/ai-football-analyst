@@ -67,6 +67,33 @@ export async function apiChat(messages: { role: string; content: string }[]) {
   return r.json();
 }
 
+export async function apiOwnerList() {
+  const r = await fetch(URLS.auth, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify({ action: 'owner_list' }),
+  });
+  return r.json();
+}
+
+export async function apiOwnerGrantVip(nickname: string, days: number) {
+  const r = await fetch(URLS.auth, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify({ action: 'owner_grant_vip', nickname, days }),
+  });
+  return r.json();
+}
+
+export async function apiOwnerRevokeVip(nickname: string) {
+  const r = await fetch(URLS.auth, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify({ action: 'owner_revoke_vip', nickname }),
+  });
+  return r.json();
+}
+
 export async function apiGetPhoto(shown: string[]) {
   const r = await fetch(URLS.photos, {
     method: 'POST',

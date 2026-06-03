@@ -221,6 +221,57 @@ def handler(event: dict, context) -> dict:
             conn.commit()
             return {'statusCode': 200, 'headers': CORS, 'body': json.dumps({'success': True, 'message': 'VIP активирован на 30 дней'})}
 
+        # --- OWNER ACTIONS (по токену creator) ---
+        elif action in ('owner_list', 'owner_grant_vip', 'owner_revoke_vip'):
+            auth_header = event.get('headers', {}).get('x-authorization', '')
+            token = auth_header.replace('Bearer ', '')
+            cur.execute(
+                f"""SELECT u.nickname FROM {SCHEMA}.sessions s JOIN {SCHEMA}.users u ON u.id=s.user_id
+                    WHERE s.token=%s AND s.expires_at > NOW()""", (token,)
+            )
+            row = cur.fetchone()
+            if not row or row[0] != 'creator':
+                return {'statusCode': 403, 'headers': CORS, 'body': json.dumps({'error': 'Доступ запрещён'})}
+
+            if action == 'owner_list':
+                cur.execute(f"""
+                    SELECT id, nickname, is_vip, vip_expires_at, created_at
+                    FROM {SCHEMA}.users ORDER BY created_at DESC
+                """)
+                rows = cur.fetchall()
+                now = datetime.utcnow()
+                users_list = []
+                for r in rows:
+                    vip_exp = r[3]
+                    is_vip_active = bool(r[2]) and (vip_exp is None or vip_exp > now)
+                    users_list.append({
+                        'id': r[0], 'nickname': r[1],
+                        'is_vip_active': is_vip_active,
+                        'vip_expires_at': vip_exp.isoformat() if vip_exp else None,
+                        'created_at': r[4].isoformat() if r[4] else None,
+                    })
+                return {'statusCode': 200, 'headers': CORS, 'body': json.dumps({'users': users_list})}
+
+            target = (body.get('nickname') or '').strip()
+            if not target:
+                return {'statusCode': 400, 'headers': CORS, 'body': json.dumps({'error': 'nickname required'})}
+            cur.execute(f"SELECT id FROM {SCHEMA}.users WHERE nickname=%s", (target,))
+            if not cur.fetchone():
+                return {'statusCode': 404, 'headers': CORS, 'body': json.dumps({'error': f'«{target}» не найден'})}
+
+            if action == 'owner_grant_vip':
+                days = int(body.get('days', 30))
+                expires = datetime.utcnow() + timedelta(days=days)
+                cur.execute(f"UPDATE {SCHEMA}.users SET is_vip=TRUE, vip_expires_at=%s WHERE nickname=%s", (expires, target))
+                conn.commit()
+                return {'statusCode': 200, 'headers': CORS, 'body': json.dumps({
+                    'success': True, 'message': f'VIP активирован для «{target}» на {days} дней'
+                })}
+            elif action == 'owner_revoke_vip':
+                cur.execute(f"UPDATE {SCHEMA}.users SET is_vip=FALSE, vip_expires_at=NULL WHERE nickname=%s", (target,))
+                conn.commit()
+                return {'statusCode': 200, 'headers': CORS, 'body': json.dumps({'success': True, 'message': f'VIP снят с «{target}»'})}
+
         # --- ADMIN ACTIONS (v4) ---
         elif action in ('admin_list', 'admin_grant_vip', 'admin_revoke_vip'):
             admin_key = body.get('admin_key', '') or event.get('headers', {}).get('x-admin-key', '')
