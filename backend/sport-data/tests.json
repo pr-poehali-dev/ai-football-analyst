@@ -1,0 +1,12 @@
+{
+  "tests": [
+    {
+      "name": "Матчи на сегодня",
+      "method": "GET",
+      "path": "/?action=today",
+      "expectedStatus": 200,
+      "expectedBody": {"count": "number"},
+      "bodyMatcher": "partial"
+    }
+  ]
+}

@@ -1,8 +1,9 @@
-"""Горячие прогнозы Анжелы — 3 в сутки, обновляются каждые 24 часа"""
+"""Горячие прогнозы Анжелы — реальные матчи из API-Football + анализ GPT"""
 import json
 import os
 import psycopg2
-from datetime import datetime
+import urllib.request
+from datetime import datetime, timezone
 
 CORS = {
     'Access-Control-Allow-Origin': '*',
@@ -11,6 +12,154 @@ CORS = {
 }
 
 SCHEMA = os.environ.get('MAIN_DB_SCHEMA', 't_p48871243_ai_football_analyst')
+API_HOST = 'v3.football.api-sports.io'
+
+# Топовые лиги для прогнозов
+TOP_LEAGUES = [39, 140, 135, 78, 61, 2, 3, 848]  # АПЛ, Примера, Серия А, Бундеслига, Лига 1, ЛЧ, ЛЕ, ЛК
+
+
+def api_football(endpoint: str, params: dict) -> dict:
+    key = os.environ.get('APIFOOTBALL_KEY', '')
+    if not key:
+        return {}
+    query = '&'.join(f'{k}={v}' for k, v in params.items())
+    url = f'https://{API_HOST}/{endpoint}?{query}'
+    req = urllib.request.Request(url, headers={
+        'x-apisports-key': key,
+        'x-rapidapi-host': API_HOST,
+    })
+    try:
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            return json.loads(resp.read())
+    except Exception:
+        return {}
+
+
+def fetch_upcoming_fixtures() -> list:
+    """Получаем предстоящие матчи топ-лиг на ближайшие 2 дня"""
+    from datetime import timedelta
+    today = datetime.now(timezone.utc)
+    results = []
+    for delta in range(2):
+        day = (today + timedelta(days=delta)).strftime('%Y-%m-%d')
+        data = api_football('fixtures', {'date': day, 'timezone': 'Europe/Moscow'})
+        for f in data.get('response', []):
+            league_id = f.get('league', {}).get('id')
+            if league_id in TOP_LEAGUES:
+                results.append(f)
+    return results
+
+
+def get_odds_for_fixture(fixture_id: int) -> dict:
+    data = api_football('odds', {'fixture': fixture_id, 'bookmaker': 8})
+    for o in data.get('response', []):
+        for bm in o.get('bookmakers', []):
+            for bet in bm.get('bets', []):
+                if bet.get('name') == 'Match Winner':
+                    odds = {}
+                    for v in bet.get('values', []):
+                        odds[v['value']] = float(v['odd'])
+                    return odds
+    return {}
+
+
+def get_h2h(team1_id: int, team2_id: int) -> list:
+    data = api_football('fixtures/headtohead', {'h2h': f'{team1_id}-{team2_id}', 'last': 5})
+    result = []
+    for f in data.get('response', []):
+        home = f.get('teams', {}).get('home', {})
+        away = f.get('teams', {}).get('away', {})
+        goals = f.get('goals', {})
+        home_win = home.get('winner')
+        away_win = away.get('winner')
+        winner = home.get('name') if home_win else (away.get('name') if away_win else 'Ничья')
+        result.append({
+            'date': f.get('fixture', {}).get('date', '')[:10],
+            'home': home.get('name'), 'away': away.get('name'),
+            'score': f'{goals.get("home", 0)}-{goals.get("away", 0)}',
+            'winner': winner,
+        })
+    return result
+
+
+def odds_to_probs(odds: dict) -> tuple:
+    home_o = odds.get('Home', 0)
+    draw_o = odds.get('Draw', 0)
+    away_o = odds.get('Away', 0)
+    if not (home_o and draw_o and away_o):
+        return 34, 33, 33
+    total = 1/home_o + 1/draw_o + 1/away_o
+    ph = round((1/home_o) / total * 100)
+    pd = round((1/draw_o) / total * 100)
+    pa = 100 - ph - pd
+    return ph, pd, pa
+
+
+def generate_forecast_with_gpt(fixture: dict, h2h: list, odds: dict) -> dict:
+    """Генерируем прогноз через GPT на основе реальных данных"""
+    openai_key = os.environ.get('OPENAI_API_KEY', '')
+    if not openai_key:
+        return None
+
+    fx = fixture.get('fixture', {})
+    home = fixture.get('teams', {}).get('home', {})
+    away = fixture.get('teams', {}).get('away', {})
+    league = fixture.get('league', {})
+    dt = fx.get('date', '')[:16]
+
+    h2h_text = '\n'.join([f"  {m['date']}: {m['home']} {m['score']} {m['away']} (победил: {m['winner']})" for m in h2h]) if h2h else '  нет данных'
+    odds_text = f"Победа {home.get('name')}: {odds.get('Home','?')}, Ничья: {odds.get('Draw','?')}, Победа {away.get('name')}: {odds.get('Away','?')}" if odds else 'нет данных'
+
+    prompt = f"""Сделай краткий прогноз на матч для сайта со ставками. Отвечай ТОЛЬКО валидным JSON без markdown.
+
+Матч: {home.get('name')} vs {away.get('name')}
+Лига: {league.get('name')}, {league.get('country')}
+Дата: {dt}
+Коэффициенты букмекеров: {odds_text}
+Последние очные встречи (H2H):
+{h2h_text}
+
+Верни JSON строго в таком формате:
+{{
+  "verdict": "краткий вывод 4-6 слов",
+  "summary": "2-3 предложения анализа с опорой на реальные данные",
+  "arguments": ["аргумент 1", "аргумент 2", "аргумент 3"],
+  "changer": "что может изменить прогноз",
+  "xg_home": 1.5,
+  "xg_away": 1.2,
+  "confidence": 68,
+  "risk_level": "Средний",
+  "is_hot": true
+}}
+
+risk_level: Низкий / Средний / Высокий
+confidence: 50-90
+is_hot: true если матч топовый или интересный"""
+
+    payload = json.dumps({
+        'model': 'gpt-4o-mini',
+        'messages': [{'role': 'user', 'content': prompt}],
+        'max_tokens': 400,
+        'temperature': 0.7,
+    }).encode()
+    req = urllib.request.Request(
+        'https://api.openai.com/v1/chat/completions',
+        data=payload,
+        headers={'Content-Type': 'application/json', 'Authorization': f'Bearer {openai_key}'},
+        method='POST'
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=20) as resp:
+            data = json.loads(resp.read())
+        content = data['choices'][0]['message']['content'].strip()
+        if content.startswith('```'):
+            content = content.split('```')[1]
+            if content.startswith('json'):
+                content = content[4:]
+        return json.loads(content)
+    except Exception:
+        return None
+
 
 SEED_FORECASTS = [
     {
@@ -151,11 +300,90 @@ def ensure_tables(cur):
 def ensure_forecasts(cur, conn):
     cur.execute(f"SELECT COUNT(*) FROM {SCHEMA}.forecasts WHERE valid_until > NOW()")
     count = cur.fetchone()[0]
-    if count < 3:
-        cur.execute(f"SELECT home_team FROM {SCHEMA}.forecasts ORDER BY id DESC LIMIT 3")
-        existing = [r[0] for r in cur.fetchall()]
-        added = 0
-        import random
+    if count >= 3:
+        return
+
+    cur.execute(f"SELECT home_team FROM {SCHEMA}.forecasts ORDER BY id DESC LIMIT 10")
+    existing = [r[0] for r in cur.fetchall()]
+    added = 0
+
+    # Пробуем получить реальные матчи
+    real_fixtures = fetch_upcoming_fixtures()
+    import random
+    random.shuffle(real_fixtures)
+
+    for fixture in real_fixtures:
+        if added >= 6:
+            break
+        home = fixture.get('teams', {}).get('home', {})
+        away = fixture.get('teams', {}).get('away', {})
+        if home.get('name') in existing:
+            continue
+
+        fx = fixture.get('fixture', {})
+        league = fixture.get('league', {})
+        dt = fx.get('date', '')
+        match_date_str = ''
+        try:
+            dt_obj = datetime.fromisoformat(dt.replace('Z', '+00:00'))
+            today = datetime.now(timezone.utc).date()
+            if dt_obj.date() == today:
+                match_date_str = f"Сегодня · {dt_obj.strftime('%H:%M')}"
+            else:
+                match_date_str = dt_obj.strftime('%d.%m · %H:%M')
+        except Exception:
+            match_date_str = dt[:16] if dt else 'TBD'
+
+        fixture_id = fx.get('id')
+        odds = get_odds_for_fixture(fixture_id) if fixture_id else {}
+        h2h = get_h2h(home.get('id', 0), away.get('id', 0))
+        ph, pd, pa = odds_to_probs(odds)
+
+        # Флаг VIP — каждый второй матч
+        is_vip = (added % 2 == 1)
+
+        gpt_result = generate_forecast_with_gpt(fixture, h2h, odds)
+        if gpt_result:
+            verdict = gpt_result.get('verdict', 'Анализ матча')
+            summary = gpt_result.get('summary', '')
+            args_list = gpt_result.get('arguments', [])
+            arguments_str = ';'.join(args_list)
+            changer = gpt_result.get('changer', '')
+            xg_home = gpt_result.get('xg_home', 1.5)
+            xg_away = gpt_result.get('xg_away', 1.2)
+            confidence = gpt_result.get('confidence', 65)
+            risk_level = gpt_result.get('risk_level', 'Средний')
+            is_hot = gpt_result.get('is_hot', True)
+        else:
+            verdict = f'Матч: {home.get("name")} — {away.get("name")}'
+            summary = f'Матч {league.get("name")}, {league.get("country")}. Данные из реальной базы.'
+            arguments_str = f'{home.get("name")} vs {away.get("name")};Лига: {league.get("name")}'
+            changer = 'Травмы ключевых игроков'
+            xg_home, xg_away = 1.5, 1.2
+            confidence = 60
+            risk_level = 'Средний'
+            is_hot = True
+
+        country = league.get('country', '')
+        flag_map = {'England': '🏴', 'Spain': '🇪🇸', 'Germany': '🇩🇪', 'France': '🇫🇷', 'Italy': '🇮🇹',
+                    'Russia': '🇷🇺', 'Netherlands': '🇳🇱', 'Portugal': '🇵🇹', 'Turkey': '🇹🇷'}
+        flag = flag_map.get(country, '🌍')
+        league_name = f'{flag} {league.get("name", "")}'
+
+        cur.execute(
+            f"""INSERT INTO {SCHEMA}.forecasts
+                (home_team, away_team, league, match_date, verdict, prob_home, prob_draw, prob_away,
+                 xg_home, xg_away, confidence, risk_level, summary, arguments, changer, is_hot, is_vip,
+                 valid_until)
+                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, NOW()+INTERVAL '20 hours')""",
+            (home.get('name'), away.get('name'), league_name, match_date_str, verdict,
+             ph, pd, pa, xg_home, xg_away, confidence, risk_level, summary, arguments_str,
+             changer, is_hot, is_vip)
+        )
+        added += 1
+
+    # Если реальных матчей не нашли — используем seed
+    if added == 0:
         seeds = SEED_FORECASTS.copy()
         random.shuffle(seeds)
         for f in seeds:
@@ -172,7 +400,8 @@ def ensure_forecasts(cur, conn):
                      f['is_hot'], f['is_vip'])
                 )
                 added += 1
-        conn.commit()
+
+    conn.commit()
 
 def handler(event: dict, context) -> dict:
     if event.get('httpMethod') == 'OPTIONS':
