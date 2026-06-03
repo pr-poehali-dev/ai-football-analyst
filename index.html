@@ -10,6 +10,22 @@
     <link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;900&family=Oswald:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <meta name="author" content="poehali.dev"/>
     <link rel="icon" type="image/jpg" href="https://cdn.poehali.dev/projects/b5ba154b-3ca7-46f5-b777-9707c73ee985/files/favicon-1780498662058.jpg">
+
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json"/>
+    <meta name="mobile-web-app-capable" content="yes"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+    <meta name="apple-mobile-web-app-title" content="Анжела"/>
+    <meta name="theme-color" content="#22c55e"/>
+    <link rel="apple-touch-icon" href="https://cdn.poehali.dev/projects/b5ba154b-3ca7-46f5-b777-9707c73ee985/bucket/5884d2d4-4821-4d6c-9720-09b91b15dde1.jpeg"/>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js');
+        });
+      }
+    </script>
     <meta property="og:title" content="Поехали!">
     <meta property="og:description" content="Ваш личный программист, который делает сайты в 30 раз быстрее обычного.">
     <meta property="og:image:width" content="4800">
