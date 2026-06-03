@@ -181,7 +181,28 @@ export default function VipPage({ isVip, nickname, onVipActivated }: Props) {
 
             {/* Phone СБП */}
             <div className="w-full bg-yellow-500/5 border border-yellow-500/20 rounded-xl p-4">
-              <div className="text-[10px] text-muted-foreground font-body mb-2 uppercase tracking-wider">Перевод по номеру телефона СБП</div>
+              <div className="text-[10px] text-muted-foreground font-body mb-3 uppercase tracking-wider">Перевод по номеру телефона СБП</div>
+
+              {/* Bank logos */}
+              <div className="flex items-center gap-2 mb-3">
+                <div className="text-[10px] text-muted-foreground font-body">Принимаем:</div>
+                {/* Ozon Bank */}
+                <div className="flex items-center gap-1 bg-[#005BFF]/10 border border-[#005BFF]/20 rounded-lg px-2 py-1">
+                  <div className="w-4 h-4 rounded-sm bg-[#005BFF] flex items-center justify-center flex-shrink-0">
+                    <span className="text-white text-[8px] font-bold leading-none">O</span>
+                  </div>
+                  <span className="text-[10px] text-[#005BFF] font-bold font-body">Ozon</span>
+                </div>
+                {/* Sber */}
+                <div className="flex items-center gap-1 bg-[#21A038]/10 border border-[#21A038]/20 rounded-lg px-2 py-1">
+                  <div className="w-4 h-4 rounded-sm bg-[#21A038] flex items-center justify-center flex-shrink-0">
+                    <span className="text-white text-[8px] font-bold leading-none">С</span>
+                  </div>
+                  <span className="text-[10px] text-[#21A038] font-bold font-body">Сбер</span>
+                </div>
+                <div className="text-[10px] text-muted-foreground/60 font-body">и любой банк</div>
+              </div>
+
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-lg bg-yellow-500/10 flex items-center justify-center flex-shrink-0">
