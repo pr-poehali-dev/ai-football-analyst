@@ -1,0 +1,10 @@
+{
+  "tests": [
+    {
+      "name": "Get forecasts (guest)",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200
+    }
+  ]
+}
