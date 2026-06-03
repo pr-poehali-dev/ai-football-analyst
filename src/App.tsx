@@ -13,11 +13,12 @@ import HotForecastsPage from '@/pages/HotForecastsPage';
 import VipPage from '@/pages/VipPage';
 import AdminPage from '@/pages/AdminPage';
 import DonatePage from '@/pages/DonatePage';
+import SupportPage from '@/pages/SupportPage';
 import { loadUser } from '@/lib/auth';
 
 const ANGELA_AVATAR = 'https://cdn.poehali.dev/projects/b5ba154b-3ca7-46f5-b777-9707c73ee985/files/b3cba21b-b8b7-4945-9402-017eb6079f89.jpg';
 
-type Tab = 'chat' | 'matches' | 'teams' | 'stats' | 'forecast' | 'calendar' | 'hot' | 'profile' | 'vip' | 'donate';
+type Tab = 'chat' | 'matches' | 'teams' | 'stats' | 'forecast' | 'calendar' | 'hot' | 'profile' | 'vip' | 'donate' | 'support';
 
 const MAIN_TABS: { id: Tab; label: string; icon: string; short: string }[] = [
   { id: 'chat',     label: 'Чат',        icon: 'MessageCircle', short: 'Чат' },
@@ -138,13 +139,14 @@ export default function App() {
             </button>
           </div>;
       case 'donate':   return <DonatePage />;
+      case 'support':  return <SupportPage />;
     }
   };
 
   const BOTTOM_TABS: { id: Tab; icon: string; short: string; badge?: boolean }[] = [
     { id: 'chat',    icon: 'MessageCircle', short: 'Чат' },
-    { id: 'matches', icon: 'Activity',      short: 'Матчи', badge: true },
     { id: 'hot',     icon: 'Flame',         short: '🔥' },
+    { id: 'support', icon: 'Headphones',    short: 'Помощь' },
     { id: 'donate',  icon: 'Coffee',        short: '☕' },
     { id: 'profile', icon: 'User',          short: 'Профиль' },
   ];
@@ -251,6 +253,17 @@ export default function App() {
             >
               <Icon name="Coffee" size={15} />
               Угостить эспрессо
+            </button>
+
+            {/* Support */}
+            <button onClick={() => setTab('support')}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-body transition-all text-left
+                ${tab === 'support'
+                  ? 'bg-primary/10 text-primary font-semibold border-l-2 border-primary pl-[10px]'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'}`}
+            >
+              <Icon name="Headphones" size={15} />
+              Поддержка
             </button>
 
             {/* Profile */}
