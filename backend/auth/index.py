@@ -221,7 +221,7 @@ def handler(event: dict, context) -> dict:
             conn.commit()
             return {'statusCode': 200, 'headers': CORS, 'body': json.dumps({'success': True, 'message': 'VIP активирован на 30 дней'})}
 
-        # --- ADMIN ACTIONS ---
+        # --- ADMIN ACTIONS (v2) ---
         elif action in ('admin_list', 'admin_grant_vip', 'admin_revoke_vip'):
             admin_key = event.get('headers', {}).get('x-admin-key', '')
             if admin_key != os.environ.get('ADMIN_KEY', ''):
