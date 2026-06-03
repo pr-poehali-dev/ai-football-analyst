@@ -12,11 +12,12 @@ import ProfilePage from '@/pages/ProfilePage';
 import HotForecastsPage from '@/pages/HotForecastsPage';
 import VipPage from '@/pages/VipPage';
 import AdminPage from '@/pages/AdminPage';
+import DonatePage from '@/pages/DonatePage';
 import { loadUser } from '@/lib/auth';
 
 const ANGELA_AVATAR = 'https://cdn.poehali.dev/projects/b5ba154b-3ca7-46f5-b777-9707c73ee985/files/b3cba21b-b8b7-4945-9402-017eb6079f89.jpg';
 
-type Tab = 'chat' | 'matches' | 'teams' | 'stats' | 'forecast' | 'calendar' | 'hot' | 'profile' | 'vip';
+type Tab = 'chat' | 'matches' | 'teams' | 'stats' | 'forecast' | 'calendar' | 'hot' | 'profile' | 'vip' | 'donate';
 
 const MAIN_TABS: { id: Tab; label: string; icon: string; short: string }[] = [
   { id: 'chat',     label: 'Чат',        icon: 'MessageCircle', short: 'Чат' },
@@ -136,6 +137,7 @@ export default function App() {
               Войти
             </button>
           </div>;
+      case 'donate':   return <DonatePage />;
     }
   };
 
@@ -143,7 +145,7 @@ export default function App() {
     { id: 'chat',    icon: 'MessageCircle', short: 'Чат' },
     { id: 'matches', icon: 'Activity',      short: 'Матчи', badge: true },
     { id: 'hot',     icon: 'Flame',         short: '🔥' },
-    { id: 'stats',   icon: 'BarChart2',     short: 'Стат' },
+    { id: 'donate',  icon: 'Coffee',        short: '☕' },
     { id: 'profile', icon: 'User',          short: 'Профиль' },
   ];
 
@@ -238,6 +240,17 @@ export default function App() {
               <Icon name="Crown" size={15} />
               VIP подписка
               {!user?.is_vip && <span className="ml-auto text-[9px] text-yellow-400 border border-yellow-500/30 px-1.5 py-0.5 rounded-full font-semibold">1200₽</span>}
+            </button>
+
+            {/* Donate */}
+            <button onClick={() => setTab('donate')}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-body transition-all text-left
+                ${tab === 'donate'
+                  ? 'bg-amber-500/10 text-amber-400 font-semibold border-l-2 border-amber-500 pl-[10px]'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'}`}
+            >
+              <Icon name="Coffee" size={15} />
+              Угостить эспрессо
             </button>
 
             {/* Profile */}
