@@ -178,12 +178,40 @@ export default function VipPage({ isVip, nickname, onVipActivated }: Props) {
           </div>
 
           <div className="p-5 flex flex-col items-center gap-4">
+
+            {/* Phone СБП */}
+            <div className="w-full bg-yellow-500/5 border border-yellow-500/20 rounded-xl p-4">
+              <div className="text-[10px] text-muted-foreground font-body mb-2 uppercase tracking-wider">Перевод по номеру телефона СБП</div>
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-yellow-500/10 flex items-center justify-center flex-shrink-0">
+                    <Icon name="Phone" size={15} className="text-yellow-400" />
+                  </div>
+                  <span className="font-display text-xl font-bold text-foreground tracking-wider">+7 962 868-99-99</span>
+                </div>
+                <button
+                  onClick={() => navigator.clipboard.writeText('+79628689999')}
+                  className="text-[10px] text-yellow-400 border border-yellow-500/30 rounded-lg px-2.5 py-1.5 font-body hover:bg-yellow-500/10 transition-colors flex items-center gap-1"
+                >
+                  <Icon name="Copy" size={11} />
+                  Скопировать
+                </button>
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div className="flex items-center gap-3 w-full">
+              <div className="flex-1 h-px bg-border/60" />
+              <span className="text-[10px] text-muted-foreground font-body">или по QR-коду</span>
+              <div className="flex-1 h-px bg-border/60" />
+            </div>
+
             {/* QR */}
             <div className="bg-white rounded-2xl p-3 shadow-lg shadow-black/30">
               <img
                 src="https://cdn.poehali.dev/projects/b5ba154b-3ca7-46f5-b777-9707c73ee985/bucket/c930221e-3473-4aa5-a270-3f96ede2ed7b.jpeg"
                 alt="QR-код СБП Ozon Банк"
-                className="w-48 h-48 object-contain rounded-lg"
+                className="w-44 h-44 object-contain rounded-lg"
               />
             </div>
 
@@ -191,7 +219,7 @@ export default function VipPage({ isVip, nickname, onVipActivated }: Props) {
             <div className="w-full space-y-2">
               {[
                 { n: '1', text: 'Открой приложение своего банка' },
-                { n: '2', text: 'Нажми «Оплатить» → «По QR-коду»' },
+                { n: '2', text: 'СБП → по номеру телефона или QR-коду' },
                 { n: '3', text: 'Переведи ровно 1 200 ₽' },
                 { n: '4', text: 'В комментарии укажи свой никнейм' },
               ].map(s => (
