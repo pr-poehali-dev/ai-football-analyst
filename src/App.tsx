@@ -66,11 +66,6 @@ export default function App() {
   const [user, setUser] = useState(() => loadUser());
   const [showAuth, setShowAuth] = useState(false);
 
-  useEffect(() => {
-    const stored = loadUser();
-    if (stored) setUser(stored);
-  }, []);
-
   const handleAuth = (u: { nickname: string; is_vip: boolean; token: string }) => {
     setUser(u);
     setShowAuth(false);

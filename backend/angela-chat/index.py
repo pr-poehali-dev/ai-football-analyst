@@ -259,7 +259,7 @@ def handler(event: dict, context) -> dict:
 
     messages_in = body.get('messages', [])
     auth = event.get('headers', {}).get('x-authorization', '')
-    token = auth.replace('Bearer ', '')
+    token = body.get('token', '') or auth.replace('Bearer ', '')
 
     conn = get_conn()
     cur = conn.cursor()

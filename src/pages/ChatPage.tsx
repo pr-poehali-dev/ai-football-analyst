@@ -194,7 +194,7 @@ export default function ChatPage({ nickname, onLogin }: Props) {
                 <Icon name="LogIn" size={15} />
                 Войти / Регистрация
               </button>
-              <p className="text-[11px] text-muted-foreground font-body">Бесплатно · 30 секунд</p>
+              <p className="text-[11px] text-muted-foreground font-body">Регистрация бесплатна</p>
             </div>
           </div>
         </div>

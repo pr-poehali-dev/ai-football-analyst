@@ -149,7 +149,7 @@ export default function HotForecastsPage({ isVip, nickname, onLogin }: Props) {
             <Icon name="LogIn" size={15} />
             Войти / Регистрация
           </button>
-          <p className="text-[11px] text-muted-foreground font-body">Регистрация бесплатна и занимает 30 секунд</p>
+          <p className="text-[11px] text-muted-foreground font-body">Регистрация бесплатна</p>
         </div>
       </div>
     );

@@ -62,8 +62,8 @@ export async function apiForecasts() {
 export async function apiChat(messages: { role: string; content: string }[]) {
   const r = await fetch(URLS.chat, {
     method: 'POST',
-    headers: authHeaders(),
-    body: JSON.stringify({ messages }),
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ messages, token: getToken() }),
   });
   return r.json();
 }
