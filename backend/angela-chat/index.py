@@ -282,10 +282,14 @@ def handler(event: dict, context) -> dict:
     openai_key = os.environ.get('OPENAI_API_KEY', '')
     messages = [{'role': 'system', 'content': system}] + messages_in[-12:]
 
+    if not openai_key:
+        return {'statusCode': 500, 'headers': CORS, 'body': json.dumps({'error': 'NO_OPENAI_KEY', 'reply': 'OPENAI_API_KEY не задан'})}
+
     try:
         reply = call_openai(messages, openai_key)
     except Exception as e:
-        reply = f"Сервис временно недоступен. Попробуй ещё раз через несколько секунд."
+        print(f"[angela-chat] OpenAI error: {type(e).__name__}: {e}")
+        reply = f"Сервис временно недоступен. Ошибка: {type(e).__name__}: {str(e)[:200]}"
     return {
         'statusCode': 200, 'headers': CORS,
         'body': json.dumps({'reply': reply, 'nickname': nickname})
